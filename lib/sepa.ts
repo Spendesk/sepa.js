@@ -87,7 +87,7 @@ class SepaDocument {
   _xmlEncoding: string = DEFAULT_XML_ENCODING;
 
   /** Group Header object */
-  grpHdr;
+  grpHdr: SepaGroupHeader;
 
   constructor(painFormat) {
     this._painFormat = painFormat || DEFAULT_PAIN_FORMAT;
@@ -171,6 +171,7 @@ class SepaDocument {
    * @return String     The XML string of this document.
    */
   toString() {
+    console.log("SRINGIFYIIIIING!!!");
     let doc = this.toXML();
     // as some banks require the document declaration string and it is not provided by the XMLSerializer, it is added here.
     const docDeclaration = '<?xml version="' + doc.xmlVersion + '" encoding="' + doc.xmlEncoding + '"?>';
@@ -373,7 +374,7 @@ class SepaPaymentInfo {
    * Adds a transaction to this payment. The transaction id will be prefixed
    * by the payment info id.
    *
-   * @param pmt       The Transacation to add.
+   * @param pmt       The Transaction to add.
    */
   addTransaction(pmt: SepaTransaction) {
     if (!(pmt instanceof SepaTransaction)) {
@@ -974,6 +975,8 @@ const extractABICodeFromIBAN = (iban) => {
 // --- Module Exports follow --- //
 export {
   SepaDocument as Document,
+  SepaPaymentInfo as PaymentInfo,
+  SepaTransaction as Transaction,
   validateIBAN,
   checksumIBAN,
   validateCreditorID,
