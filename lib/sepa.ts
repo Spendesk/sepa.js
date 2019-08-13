@@ -16,18 +16,18 @@
  * SEPA.setIDSeparator         -- function to customize the ID separator when needed (defaults to '.')
  * SEPA.enableValidations      -- function to enable/disable fields validation
 */
-var XSI_NAMESPACE = 'http://www.w3.org/2001/XMLSchema-instance';
-var XSI_NS        = 'urn:iso:std:iso:20022:tech:xsd:';
-var DEFAULT_XML_VERSION   = '1.0';
-var DEFAULT_XML_ENCODING  = 'UTF-8';
-var DEFAULT_PAIN_FORMAT   = 'pain.008.001.02';
+const XSI_NAMESPACE = 'http://www.w3.org/2001/XMLSchema-instance';
+const XSI_NS        = 'urn:iso:std:iso:20022:tech:xsd:';
+const DEFAULT_XML_VERSION   = '1.0';
+const DEFAULT_XML_ENCODING  = 'UTF-8';
+const DEFAULT_PAIN_FORMAT   = 'pain.008.001.02';
 
-var ID_SEPARATOR = '.';
+let ID_SEPARATOR = '.';
 function setIDSeparator(seperator) {
   ID_SEPARATOR = seperator;
 }
 
-var VALIDATIONS_ENABLED = true;
+let VALIDATIONS_ENABLED = true;
 function enableValidations(enabled) {
   VALIDATIONS_ENABLED = !!enabled;
 }
@@ -64,7 +64,7 @@ class InvalidSupplierError extends Error {
 }
 
 function getPainXMLVersion(painFormat) {
-  var inc = painFormat.indexOf('pain.008') === 0 ?  1 : 0;
+  const inc = painFormat.indexOf('pain.008') === 0 ?  1 : 0;
   return parseInt(painFormat.substr(-2), 10) + inc;
 }
 
@@ -128,9 +128,9 @@ class SepaDocument {
    * called automatically when serialized to XML.
    */
   normalize() {
-    var controlSum = 0;
-    var txCount = 0;
-    for (var i = 0, l = this._paymentInfo.length; i < l; ++i) {
+    let controlSum = 0;
+    let txCount = 0;
+    for (let i = 0, l = this._paymentInfo.length; i < l; ++i) {
       this._paymentInfo[i].normalize();
       controlSum += this._paymentInfo[i].controlSum;
       txCount += this._paymentInfo[i].transactionCount;
@@ -147,17 +147,17 @@ class SepaDocument {
   toXML() {
     this.normalize();
 
-    var docNS = XSI_NS + this._painFormat;
-    var doc = createDocument(docNS, 'Document');
+    const docNS = XSI_NS + this._painFormat;
+    let doc = createDocument(docNS, 'Document');
     doc.xmlVersion = this._xmlVersion;
     doc.xmlEncoding = this._xmlEncoding;
-    var body = doc.documentElement;
+    let body = doc.documentElement;
 
     body.setAttribute('xmlns:xsi', XSI_NAMESPACE);
     body.setAttribute('xsi:schemaLocation', XSI_NS + this._painFormat + ' ' + this._painFormat + '.xsd');
-    var rootElement = doc.createElementNS(docNS, this._type);
+    let rootElement = doc.createElementNS(docNS, this._type);
     rootElement.appendChild(this.grpHdr.toXML(doc));
-    for (var i = 0, l = this._paymentInfo.length; i < l; ++i) {
+    for (let i = 0, l = this._paymentInfo.length; i < l; ++i) {
       rootElement.appendChild(this._paymentInfo[i].toXML(doc));
     }
 
@@ -171,9 +171,9 @@ class SepaDocument {
    * @return String     The XML string of this document.
    */
   toString() {
-    var doc = this.toXML();
+    let doc = this.toXML();
     // as some banks require the document declaration string and it is not provided by the XMLSerializer, it is added here.
-    var docDeclaration = '<?xml version="' + doc.xmlVersion + '" encoding="' + doc.xmlEncoding + '"?>';
+    const docDeclaration = '<?xml version="' + doc.xmlVersion + '" encoding="' + doc.xmlEncoding + '"?>';
     return docDeclaration + serializeToString(doc);
   }
 }
@@ -211,9 +211,9 @@ class SepaGroupHeader {
     * @return      The DOM <GrpHdr> Element.
     */
   toXML(doc) {
-    var r = createXMLHelper(doc, true, true);
-    var grpHdr = doc.createElementNS(doc.documentElement.namespaceURI, 'GrpHdr');
-    var painVersion = getPainXMLVersion(this._painFormat);
+    const r = createXMLHelper(doc, true, true);
+    let grpHdr = doc.createElementNS(doc.documentElement.namespaceURI, 'GrpHdr');
+    const painVersion = getPainXMLVersion(this._painFormat);
 
     r(grpHdr, 'MsgId', this.id);
     r(grpHdr, 'CreDtTm', this.created.toISOString());
@@ -231,15 +231,15 @@ class SepaGroupHeader {
       r(grpHdr, 'Grpg', this.grouping);
     }
 
-    var n = createXMLHelper(doc, true, false);
-    var initgPty = n(grpHdr, 'InitgPty');
+    const n = createXMLHelper(doc, true, false);
+    let initgPty = n(grpHdr, 'InitgPty');
     r(initgPty, 'Nm', this.initiatorName);
     if (this.cifNumber) {
       r(initgPty, 'Id', 'OrgId', 'Othr', 'Id', this.cifNumber);
     }
     if (this.cucNumber) {
-      var p = createXMLHelper(doc, true, false);
-      var other = p(initgPty, 'Id', 'OrgId', 'Othr');
+      const p = createXMLHelper(doc, true, false);
+      let other = p(initgPty, 'Id', 'OrgId', 'Othr');
       r(other, 'Id', this.cucNumber);
       r(other, 'Issr', 'CBI');
     }
@@ -362,8 +362,8 @@ class SepaPaymentInfo {
    * _NOT_ be called when serialized to XML and must be called manually.
    */
   normalize() {
-    var controlSum = 0;
-    for (var i = 0, l = this._payments.length; i < l; ++i) {
+    let controlSum = 0;
+    for (let i = 0, l = this._payments.length; i < l; ++i) {
       controlSum += this._payments[i].amount;
     }
     this.controlSum = controlSum;
@@ -397,7 +397,7 @@ class SepaPaymentInfo {
   validate() {
 
     // TODO consider using getters/setters instead
-    var pullFrom = this.method === PaymentInfoTypes.DirectDebit ? 'creditor' : 'debtor';
+    const pullFrom = this.method === PaymentInfoTypes.DirectDebit ? 'creditor' : 'debtor';
 
     assert_fixed(this.localInstrumentation, ['CORE', 'COR1', 'B2B'], 'localInstrumentation');
     assert_fixed(this.sequenceType, ['FRST', 'RCUR', 'OOFF', 'FNAL'], 'sequenceType');
@@ -434,10 +434,10 @@ class SepaPaymentInfo {
       this.validate();
     }
 
-    var n = createXMLHelper(doc, true, false);
+    const n = createXMLHelper(doc, true, false);
     //var o = createXMLHelper(doc, false, true);
-    var r = createXMLHelper(doc, true, true);
-    var pmtInf = doc.createElementNS(doc.documentElement.namespaceURI, 'PmtInf');
+    const r = createXMLHelper(doc, true, true);
+    let pmtInf = doc.createElementNS(doc.documentElement.namespaceURI, 'PmtInf');
 
     r(pmtInf, 'PmtInfId', this.id);
     r(pmtInf, 'PmtMtd', this.method);
@@ -448,7 +448,7 @@ class SepaPaymentInfo {
       r(pmtInf, 'CtrlSum', this.controlSum.toFixed(2));
     }
 
-    var pmtTpInf = n(pmtInf, 'PmtTpInf');
+    let pmtTpInf = n(pmtInf, 'PmtTpInf');
     // ORDER IS IMPORTANT !
     r(pmtTpInf, 'InstrPrty', this.instructionPriority);
     r(pmtTpInf, 'SvcLvl', 'Cd', 'SEPA');
@@ -465,13 +465,13 @@ class SepaPaymentInfo {
       r(pmtInf, 'ReqdExctnDt', this.requestedExecutionDate.toISOString().substr(0, 10));
     }
 
-    var pullFrom = this.method === PaymentInfoTypes.DirectDebit ? 'creditor' : 'debtor';
-    var emitterNodeName = this.method === PaymentInfoTypes.DirectDebit ? 'Cdtr' : 'Dbtr';
-    var emitter = n(pmtInf, emitterNodeName);
+    const pullFrom = this.method === PaymentInfoTypes.DirectDebit ? 'creditor' : 'debtor';
+    const emitterNodeName = this.method === PaymentInfoTypes.DirectDebit ? 'Cdtr' : 'Dbtr';
+    const emitter = n(pmtInf, emitterNodeName);
 
     r(emitter, 'Nm', this[pullFrom + 'Name']);
     if (this[pullFrom + 'Street'] && this[pullFrom + 'City'] && this[pullFrom + 'Country']) {
-      var pstl = n(emitter, 'PstlAdr');
+      let pstl = n(emitter, 'PstlAdr');
       r(pstl, 'Ctry', this[pullFrom + 'Country']);
       r(pstl, 'AdrLine', this[pullFrom + 'Street']);
       r(pstl, 'AdrLine', this[pullFrom + 'City']);
@@ -479,8 +479,8 @@ class SepaPaymentInfo {
 
     r(pmtInf, emitterNodeName + 'Acct', 'Id', 'IBAN', this[pullFrom + 'IBAN']);
     if (this[pullFrom + 'BIC']) {
-      var p = createXMLHelper(doc, true, false);
-      var finInstnId = p(pmtInf, emitterNodeName + 'Agt', 'FinInstnId');
+      const p = createXMLHelper(doc, true, false);
+      let finInstnId = p(pmtInf, emitterNodeName + 'Agt', 'FinInstnId');
       r(finInstnId, 'BIC', this[pullFrom + 'BIC']);
       if (this[pullFrom + 'MemberId']) {
         r(finInstnId, 'ClrSysMmbId', 'MmbId', this[pullFrom + 'MemberId']);
@@ -492,12 +492,12 @@ class SepaPaymentInfo {
     r(pmtInf, 'ChrgBr', 'SLEV');
 
     if (this.method === PaymentInfoTypes.DirectDebit) {
-      var creditorScheme = n(pmtInf, 'CdtrSchmeId', 'Id', 'PrvtId', 'Othr');
+      let creditorScheme = n(pmtInf, 'CdtrSchmeId', 'Id', 'PrvtId', 'Othr');
       r(creditorScheme, 'Id', this.creditorId);
       r(creditorScheme, 'SchmeNm', 'Prtry', 'SEPA');
     }
 
-    for (var i = 0, l = this._payments.length; i < l; ++i) {
+    for (let i = 0, l = this._payments.length; i < l; ++i) {
       pmtInf.appendChild(this._payments[i].toXML(doc));
     }
 
@@ -582,7 +582,7 @@ class SepaTransaction {
 
   
   validate() {
-    var pullFrom = this._type === TransactionTypes.Transfer ? 'creditor' : 'debtor';
+    const pullFrom = this._type === TransactionTypes.Transfer ? 'creditor' : 'debtor';
 
     assert_sepa_id_set1(this.end2endId, 'end2endId');
     assert_range(this.amount, 0.01, 999999999.99, 'amount');
@@ -611,23 +611,23 @@ class SepaTransaction {
       this.validate();
     }
 
-    var pullFrom = this._type === TransactionTypes.Transfer ? 'creditor' : 'debtor';
-    var recieverNodeName = this._type === TransactionTypes.Transfer ? 'Cdtr' : 'Dbtr';
+    const pullFrom = this._type === TransactionTypes.Transfer ? 'creditor' : 'debtor';
+    const recieverNodeName = this._type === TransactionTypes.Transfer ? 'Cdtr' : 'Dbtr';
 
-    var n = createXMLHelper(doc, true, false);
-    var o = createXMLHelper(doc, false, true);
-    var r = createXMLHelper(doc, true, true);
+    const n = createXMLHelper(doc, true, false);
+    const o = createXMLHelper(doc, false, true);
+    const r = createXMLHelper(doc, true, true);
 
-    var txInf = doc.createElementNS(doc.documentElement.namespaceURI, this._type);
+    let txInf = doc.createElementNS(doc.documentElement.namespaceURI, this._type);
 
-    var paymentId = n(txInf, 'PmtId');
+    let paymentId = n(txInf, 'PmtId');
     r(paymentId, 'InstrId', this.id);
     r(paymentId, 'EndToEndId', this.end2endId);
 
     if (this._type === TransactionTypes.DirectDebit) {
       r(txInf, 'InstdAmt', this.amount.toFixed(2)).setAttribute('Ccy', this.currency);
 
-      var mandate = n(txInf, 'DrctDbtTx', 'MndtRltdInf');
+      let mandate = n(txInf, 'DrctDbtTx', 'MndtRltdInf');
       r(mandate, 'MndtId', this.mandateId);
       r(mandate, 'DtOfSgntr', this.mandateSignatureDate.toISOString().substr(0, 10));
 
@@ -648,11 +648,11 @@ class SepaTransaction {
       r(txInf, recieverNodeName + 'Agt', 'FinInstnId', 'Othr', 'Id', 'NOTPROVIDED');
     }
 
-    var reciever = n(txInf, recieverNodeName);
+    let reciever = n(txInf, recieverNodeName);
     r(reciever, 'Nm', this[pullFrom + 'Name']);
 
     if (this[pullFrom + 'Street'] && this[pullFrom + 'City'] && this[pullFrom + 'Country']) {
-      var pstl = n(reciever, 'PstlAdr');
+      let pstl = n(reciever, 'PstlAdr');
       r(pstl, 'Ctry', this.debtorCountry);
       r(pstl, 'AdrLine', this.debtorStreet);
       r(pstl, 'AdrLine', this.debtorCity);
@@ -675,9 +675,9 @@ class SepaTransaction {
  * @return        The input string with letters replaced
  */
 function _replaceChars(str) {
-  var res = '';
-  for (var i = 0, l = str.length; i < l; ++i) {
-    var cc = str.charCodeAt(i);
+  let res = '';
+  for (let i = 0, l = str.length; i < l; ++i) {
+    const cc = str.charCodeAt(i);
     if (cc >= 65 && cc <= 90) {
       res += (cc - 55).toString();
     } else if (cc >= 97 && cc <= 122) {
@@ -696,8 +696,8 @@ function _replaceChars(str) {
  * @return        The number mod 97.
  */
 function _txtMod97(str) {
-  var res = 0;
-  for (var i = 0, l = str.length; i < l; ++i) {
+  let res = 0;
+  for (let i = 0, l = str.length; i < l; ++i) {
     res = (res * 10 + parseInt(str[i], 10)) % 97;
   }
   return res;
@@ -710,7 +710,7 @@ function _txtMod97(str) {
  * @return            True, if the IBAN is valid.
  */
 function validateIBAN(iban) {
-  var ibrev = iban.substr(4) + iban.substr(0, 4);
+  const ibrev = iban.substr(4) + iban.substr(0, 4);
   return _txtMod97(_replaceChars(ibrev)) === 1;
 }
 
@@ -725,8 +725,8 @@ function validateIBAN(iban) {
  * @return            The corrected IBAN.
  */
 function checksumIBAN(iban) {
-  var ibrev = iban.substr(4) + iban.substr(0, 2) + '00';
-  var mod = _txtMod97(_replaceChars(ibrev));
+  const ibrev = iban.substr(4) + iban.substr(0, 2) + '00';
+  const mod = _txtMod97(_replaceChars(ibrev));
   return iban.substr(0, 2) + ('0' + (98 - mod)).substr(-2,2) + iban.substr(4);
 }
 
@@ -737,7 +737,7 @@ function checksumIBAN(iban) {
  * @return            True, if the Creditor IDis valid.
  */
 function validateCreditorID(cid) {
-  var cidrev = cid.substr(7) + cid.substr(0, 4);
+  const cidrev = cid.substr(7) + cid.substr(0, 4);
   return _txtMod97(_replaceChars(cidrev)) === 1;
 }
 
@@ -752,8 +752,8 @@ function validateCreditorID(cid) {
  * @return            The corrected IBAN.
  */
 function checksumCreditorID(cid) {
-  var cidrev = cid.substr(7) + cid.substr(0, 2) + '00';
-  var mod = _txtMod97(_replaceChars(cidrev));
+  const cidrev = cid.substr(7) + cid.substr(0, 2) + '00';
+  const mod = _txtMod97(_replaceChars(cidrev));
   return cid.substr(0, 2) + ('0' + (98 - mod)).substr(-2,2) + cid.substr(4);
 }
 
@@ -805,7 +805,7 @@ function assert_debitor({
   try {
     assert_iban(iban, pullFrom + 'IBAN');
     assert_fixed(bic.length, [0, 8, 11], pullFrom + 'BIC');
-    var countryMatches = (bic.length === 0 || bic.substr(4, 2) === iban.substr(0, 2));
+    const countryMatches = (bic.length === 0 || bic.substr(4, 2) === iban.substr(0, 2));
 
     assert(countryMatches, message);
   } catch (err) {
@@ -900,7 +900,7 @@ function createDocument(nsURI, qname) {
   if (typeof document !== 'undefined' && typeof document.implementation !== 'undefined') {
     return document.implementation.createDocument(nsURI, qname, null);
   } else {
-    var DOMImplementation = require('xmldom').DOMImplementation;
+    const DOMImplementation = require('xmldom').DOMImplementation;
     return new DOMImplementation().createDocument(nsURI, qname);
   }
 }
@@ -913,8 +913,8 @@ function createDocument(nsURI, qname) {
  * @return            The serialized XML document.
  */
 function serializeToString(doc) {
-  var XMLSerializer = require('xmldom').XMLSerializer;
-  var s = new XMLSerializer();
+  const XMLSerializer = require('xmldom').XMLSerializer;
+  const s = new XMLSerializer();
   return s.serializeToString(doc);
 }
 
@@ -946,14 +946,14 @@ function serializeToString(doc) {
  * @param required    If false, nodes with null values will not be added to the parent.
  * @param withVal     If true, the last parameter of the returned function is set as textContent.
  */
-function createXMLHelper(doc, required, withVal) {
+function createXMLHelper(doc, required: boolean, withVal: boolean) {
   return function(...args: any[]) {
-    var node = args[0];
-    var val = withVal && args[args.length - 1];
-    var maxarg = (withVal ? args.length - 1 : args.length);
+    let node = args[0];
+    const val = withVal && args[args.length - 1];
+    const maxarg = (withVal ? args.length - 1 : args.length);
 
     if (required || val || val === 0) {
-      for (var i = 1; i < maxarg; ++i) {
+      for (let i = 1; i < maxarg; ++i) {
         node = node.appendChild(doc.createElementNS(doc.documentElement.namespaceURI, args[i]));
       }
       if (withVal) {
