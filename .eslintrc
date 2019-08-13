@@ -29,8 +29,12 @@
         "jest": true,
     },
     "extends": "eslint:recommended",
+    "parser": "@typescript-eslint/parser",
     "parserOptions": {
       "ecmaVersion": 8,
     },
-    "plugins": ["jest"]
+    "plugins": [
+        "@typescript-eslint",
+        "jest",
+    ]
 }
