@@ -171,7 +171,6 @@ class SepaDocument {
    * @return String     The XML string of this document.
    */
   toString() {
-    console.log("SRINGIFYIIIIING!!!");
     let doc = this.toXML();
     // as some banks require the document declaration string and it is not provided by the XMLSerializer, it is added here.
     const docDeclaration = '<?xml version="' + doc.xmlVersion + '" encoding="' + doc.xmlEncoding + '"?>';
