@@ -62,8 +62,9 @@
   }
 
   function getPainXMLVersion(painFormat) {
+    // 008 is the version by default.
     var inc = painFormat.indexOf('pain.008') === 0 ?  1 : 0;
-    return parseInt(painFormat.substr(-2), 10) + inc;
+    return parseInt(painFormat.substr(2), 10) + inc;
   }
 
   function SepaDocument(painFormat, options) {
